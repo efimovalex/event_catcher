@@ -1,0 +1,36 @@
+#!/bin/bash -e
+
+# Get repo root by sub-shelling and getting the parent directory of this script
+DIR=$( cd $(dirname $0)/.. && pwd )
+source $DIR/bin/include
+
+echo -n "Building with "
+go version
+
+BUILDDIR=$DIR/build
+
+echo $BUILDDIR
+
+mkdir -p $BUILDDIR
+
+BIN_EVENT_KIT=$BUILDDIR/event_kit
+rm -rfv $BIN_EVENT_KIT
+
+cd $DIR
+rm -rfv pkg
+
+LDFLAGS=""
+
+if [ -n "$VERSION" ]; then
+  LDFLAGS="$LDFLAGS -X github.com/efimovalex/EventKitAPI/app.version $VERSION"
+fi
+
+if [ -n "$BUILD_NUMBER" ]; then
+  LDFLAGS="$LDFLAGS -X github.com/efimovalex/EventKitAPI/app.buildNumber $BUILD_NUMBER"
+fi
+
+echo "=> go build -v -o $BIN_EVENT_KIT ."
+go build -v \
+  -ldflags "$LDFLAGS" \
+  -o $BIN_EVENT_KIT \
+  .
