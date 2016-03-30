@@ -6,4 +6,5 @@ var RootCmd = &cobra.Command{}
 
 func init() {
 	RootCmd.AddCommand(serverCmd)
+	RootCmd.AddCommand(cassandraCmd)
 }

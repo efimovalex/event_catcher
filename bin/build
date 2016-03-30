@@ -22,11 +22,11 @@ rm -rfv pkg
 LDFLAGS=""
 
 if [ -n "$VERSION" ]; then
-  LDFLAGS="$LDFLAGS -X github.com/efimovalex/EventKitAPI/app.version $VERSION"
+  LDFLAGS="$LDFLAGS -X github.com/efimovalex/EventKitAPI/app.version=$VERSION"
 fi
 
 if [ -n "$BUILD_NUMBER" ]; then
-  LDFLAGS="$LDFLAGS -X github.com/efimovalex/EventKitAPI/app.buildNumber $BUILD_NUMBER"
+  LDFLAGS="$LDFLAGS -X github.com/efimovalex/EventKitAPI/app.buildNumber=$BUILD_NUMBER"
 fi
 
 echo "=> go build -v -o $BIN_EVENT_KIT ."

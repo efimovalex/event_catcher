@@ -1,6 +1,7 @@
 package consumerapi
 
 import (
+	"github.com/efimovalex/EventKitAPI/adaptors/database"
 	"log"
 )
 
@@ -10,28 +11,31 @@ type Dispatcher struct {
 	WorkerPool chan chan Job
 	maxWorkers int
 	logger     *log.Logger
+	dbAdaptor  *database.Adaptor
 }
 
-func NewDispatcher(maxWorkers int, maxJobs int, logger *log.Logger) *Dispatcher {
+func NewDispatcher(maxWorkers int, maxJobs int, logger *log.Logger, dbAdaptor *database.Adaptor) *Dispatcher {
 	jobQueue := make(chan Job, maxJobs)
 	pool := make(chan chan Job, maxWorkers)
 	return &Dispatcher{
+		maxWorkers: maxWorkers,
 		JobQueue:   jobQueue,
 		WorkerPool: pool,
 		logger:     logger,
+		dbAdaptor:  dbAdaptor,
 	}
 }
 
 func (d *Dispatcher) Run() {
 	// starting n number of workers
 	for i := 0; i < d.maxWorkers; i++ {
-		worker := NewWorker(d.WorkerPool, d.logger)
+		worker := NewWorker(d.WorkerPool, d.logger, d.dbAdaptor)
 		worker.Start()
 	}
 
 	d.logger.Println("Workers started")
 
-	d.dispatch()
+	go d.dispatch()
 }
 
 func (d *Dispatcher) dispatch() {
@@ -39,7 +43,6 @@ func (d *Dispatcher) dispatch() {
 		select {
 		case job := <-d.JobQueue:
 			// a job request has been received
-			d.logger.Println("job received")
 			go func(job Job) {
 				// try to obtain a worker job channel that is available.
 				// this will block until a worker is idle
@@ -50,4 +53,8 @@ func (d *Dispatcher) dispatch() {
 			}(job)
 		}
 	}
+}
+
+func (d *Dispatcher) AddJob(work Job) {
+	d.JobQueue <- work
 }

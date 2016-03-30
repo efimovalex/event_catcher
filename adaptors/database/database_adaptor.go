@@ -1,19 +1,25 @@
 package database
 
 import (
-	"github.com/gocql/gocql"
+	"github.com/hailocab/gocassa"
 )
 
 // Adaptor for DB
 type Adaptor struct {
-	Session gocql.Session
+	Session gocassa.KeySpace
+}
+
+type Interface interface {
 }
 
 // New db adaptor
-func New(ips []string) {
-	cluster := gocql.NewCluster(ips...)
-	cluster.Keyspace = "event"
-	cluster.Consistency = gocql.Quorum
-	session, _ := cluster.CreateSession()
-	defer session.Close()
+func NewAdaptor(ips []string) *Adaptor {
+	session, err := gocassa.ConnectToKeySpace("events", ips, "", "")
+	if err != nil {
+		panic(err)
+	}
+
+	return &Adaptor{
+		Session: session,
+	}
 }
