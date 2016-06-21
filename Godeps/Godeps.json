@@ -1,10 +1,15 @@
 {
 	"ImportPath": "github.com/efimovalex/EventKitAPI",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.6",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/dgrijalva/jwt-go",
+			"Comment": "v2.6.0",
+			"Rev": "a2c85815a77d0f951e33ba4db5ae93629a1530af"
+		},
 		{
 			"ImportPath": "github.com/gocql/gocql",
 			"Comment": "pre-node-events-149-g84d36ab",
@@ -15,17 +20,54 @@
 			"Rev": "1963d058044b19e16595f80d5050fa54e2070438"
 		},
 		{
+			"ImportPath": "github.com/google/btree",
+			"Rev": "cc6329d4279e3f025a53a83c397d2339b5705c45"
+		},
+		{
 			"ImportPath": "github.com/hailocab/go-hostpool",
 			"Rev": "e80d13ce29ede4452c43dea11e79b9bc8a15b478"
 		},
 		{
-			"ImportPath": "github.com/inconshreveable/mousetrap",
-			"Rev": "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+			"ImportPath": "github.com/hailocab/gocassa",
+			"Comment": "v1.2.0",
+			"Rev": "c65a96f07d0a365ecad4dec10b40662fc6c7be1e"
 		},
 		{
 			"ImportPath": "github.com/kelseyhightower/envconfig",
 			"Comment": "v1.0.0-26-g12c18e8",
 			"Rev": "12c18e8343f6eb5fc3a9d5c8dc353e42e6bb40b9"
+		},
+		{
+			"ImportPath": "github.com/labstack/echo",
+			"Comment": "v2.0.0-beta.2-113-gb8c52b0",
+			"Rev": "b8c52b0432b43944673b17f112c041f3c32c593d"
+		},
+		{
+			"ImportPath": "github.com/labstack/gommon/bytes",
+			"Comment": "v0.0.3-54-gb5f03e3",
+			"Rev": "b5f03e345acd2096591b6f738cb8d2b9b3231c50"
+		},
+		{
+			"ImportPath": "github.com/labstack/gommon/color",
+			"Comment": "v0.0.3-54-gb5f03e3",
+			"Rev": "b5f03e345acd2096591b6f738cb8d2b9b3231c50"
+		},
+		{
+			"ImportPath": "github.com/labstack/gommon/log",
+			"Comment": "v0.0.3-54-gb5f03e3",
+			"Rev": "b5f03e345acd2096591b6f738cb8d2b9b3231c50"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-colorable",
+			"Rev": "3dac7b4f76f6e17fb39b768b89e3783d16e237fe"
+		},
+		{
+			"ImportPath": "github.com/mattn/go-isatty",
+			"Rev": "56b76bdf51f7708750eac80fa38b952bb9f32639"
+		},
+		{
+			"ImportPath": "github.com/mitchellh/mapstructure",
+			"Rev": "d2dd0262208475919e1a362f675cfc0e7c10e905"
 		},
 		{
 			"ImportPath": "github.com/spf13/cobra",
@@ -36,8 +78,25 @@
 			"Rev": "7f60f83a2c81bc3c3c0d5297f61ddfa68da9d3b7"
 		},
 		{
+			"ImportPath": "github.com/valyala/fasttemplate",
+			"Rev": "3b874956e03f1636d171bda64b130f9135f42cff"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "2cba614e8ff920c60240d2677bc019af32ee04e5"
+		},
+		{
+			"ImportPath": "gopkg.in/bsm/ratelimit.v1",
+			"Rev": "cf024e72f03fcbd6d7464850ef70cd3f77d5c64a"
+		},
+		{
 			"ImportPath": "gopkg.in/inf.v0",
 			"Rev": "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
+		},
+		{
+			"ImportPath": "gopkg.in/redis.v3",
+			"Comment": "v3.6.2",
+			"Rev": "5183f8dcde9737db7583dbfa9881800dba26e3fa"
 		}
 	]
 }

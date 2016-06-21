@@ -29,11 +29,11 @@ func NewDispatcher(maxWorkers int, maxJobs int, logger *log.Logger, dbAdaptor *d
 func (d *Dispatcher) Run() {
 	// starting n number of workers
 	for i := 0; i < d.maxWorkers; i++ {
-		worker := NewWorker(d.WorkerPool, d.logger, d.dbAdaptor)
+		worker := NewWorker(i, d.WorkerPool, d.logger, d.dbAdaptor)
 		worker.Start()
 	}
 
-	d.logger.Println("Workers started")
+	d.logger.Println("INFO: Workers started")
 
 	go d.dispatch()
 }

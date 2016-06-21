@@ -52,7 +52,7 @@ func (s *Service) Start() error {
 		MaxHeaderBytes: 1 << 20,
 	}
 	mux = make(map[string]func(http.ResponseWriter, *http.Request))
-	mux["/v1/event"] = s.eventConsumerHandler
+	mux["/v1/events"] = s.eventConsumerHandler
 
 	return server.ListenAndServe()
 }
