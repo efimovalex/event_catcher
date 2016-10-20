@@ -16,7 +16,7 @@ type EventEndpoints struct {
 }
 
 func (ee *EventEndpoints) Delete(c echo.Context) error {
-	eventID := c.QueryParam("sg_event_id")
+	eventID := c.Param("sg_event_id")
 
 	err := ee.DBAdaptor.DeleteEvent(eventID)
 	if err != nil {

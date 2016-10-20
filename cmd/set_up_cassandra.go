@@ -29,23 +29,23 @@ func setUp(cmd *cobra.Command, args []string) {
 		log.Fatal("Error occurred during startup:", err.Error())
 	}
 
-	DBAdaptor := database.NewAdaptor(strings.Split(config.CassandraInterfaces, ","))
+	DBAdaptor := database.NewAdaptor(strings.Split(config.CassandraInterfaces, ","), config.CassandraUser, config.CassandraPassword)
 
 	for _, indexField := range database.IndexFields {
 		eventsTable := DBAdaptor.GetEventMultimapTable(indexField)
 
-		if err := eventsTable.Recreate(); err != nil {
+		if err := eventsTable.Create(); err != nil {
 			log.Print(err.Error())
 		}
 	}
 
 	eventTable := DBAdaptor.GetTimeSeriesEventTable()
-	if err := eventTable.Recreate(); err != nil {
+	if err := eventTable.Create(); err != nil {
 		log.Print(err.Error())
 	}
 
 	eventMapTable := DBAdaptor.GetEventMapTable()
-	if err := eventMapTable.Recreate(); err != nil {
+	if err := eventMapTable.Create(); err != nil {
 		log.Print(err.Error())
 	}
 }

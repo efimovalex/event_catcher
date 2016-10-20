@@ -211,8 +211,12 @@ func (e *Event) MapEvent(eventMap map[string]interface{}) {
 		e.UniqueArgumets[index] = val.(string)
 	}
 
-	if len(eventMap) > 0 {
-		log.Print("Event Map still contains unprocessed fields: %+v", eventMap)
+	if len(e.UniqueArgumets) == 0 {
+		e.UniqueArgumets = nil
+	}
+
+	if len(e.Categories) == 0 {
+		e.Categories = nil
 	}
 }
 

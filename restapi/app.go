@@ -12,6 +12,9 @@ import (
 
 	"github.com/efimovalex/EventKitAPI/adaptors/cache"
 	"github.com/efimovalex/EventKitAPI/adaptors/database"
+
+	"github.com/echo-contrib/echopprof"
+	_ "net/http/pprof"
 )
 
 var URL = ""
@@ -31,12 +34,13 @@ type ServiceInterface interface {
 func NewService(config *Config) Service {
 	// setup echo
 	echo := echo.New()
+	echopprof.Wrapper(echo)
 
 	logger := log.New(os.Stderr, "EVENT CONSUMER:", log.Ldate|log.Ltime|log.Lshortfile)
 
-	DBAdaptor := database.NewAdaptor(strings.Split(config.CassandraInterfaces, ","))
+	DBAdaptor := database.NewAdaptor(strings.Split(config.CassandraInterfaces, ","), config.CassandraUser, config.CassandraPassword)
 
-	CacheAdaptor := cache.NewAdaptor(config.CacheURL)
+	CacheAdaptor := cache.NewAdaptor(config.CacheURL, config.CacheRedisPassword)
 
 	service := Service{
 		Logger: logger,

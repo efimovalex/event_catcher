@@ -28,11 +28,11 @@ type Adaptor struct {
 }
 
 // New instantiates the redis abstraction layer
-func NewAdaptor(addrs string) *Adaptor {
+func NewAdaptor(addrs, password string) *Adaptor {
 	client := redis.NewClient(&redis.Options{
 		Addr:     addrs,
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Password: password, // no password set
+		DB:       0,        // use default DB
 	})
 
 	return &Adaptor{client: client, ttl: 10 * time.Minute}

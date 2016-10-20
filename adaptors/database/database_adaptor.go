@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gocql/gocql"
 	"github.com/hailocab/gocassa"
 )
 
@@ -13,6 +14,8 @@ type Adaptor struct {
 	Session            gocassa.KeySpace
 	urls               []string
 	eventTimeDateRange time.Duration
+	Username           string
+	Password           string
 }
 
 type Interface interface {
@@ -21,19 +24,47 @@ type Interface interface {
 var IndexFields = []string{"event", "email", "sg_message_id"}
 
 // New db adaptor
-func NewAdaptor(urls []string) *Adaptor {
-	session, _ := gocassa.ConnectToKeySpace("events", urls, "", "")
+func NewAdaptor(urls []string, username, password string) *Adaptor {
+	cluster := gocql.NewCluster(urls...)
+	cluster.Keyspace = "events"
+	cluster.ProtoVersion = 3
+
+	cluster.Authenticator = gocql.PasswordAuthenticator{
+		Username: username,
+		Password: password,
+	}
+	cluster.Keyspace = "events"
+	session, err := cluster.CreateSession()
+	if err != nil {
+		log.Fatalf("Cassandra conn error: %s", err.Error())
+	}
+	qe := gocassa.GoCQLSessionToQueryExecutor(session)
+	conn := gocassa.NewConnection(qe)
+	gocassaSession := conn.KeySpace("events")
 
 	return &Adaptor{
-		Session:            session,
+		Session:            gocassaSession,
 		urls:               urls,
 		eventTimeDateRange: 7 * 24 * time.Hour,
+		Username:           username,
+		Password:           password,
 	}
 }
 
 func (a *Adaptor) ReestablishConnection() {
 	log.Println("Reestablishing cql connection")
-	a.Session, _ = gocassa.ConnectToKeySpace("events", a.urls, "", "")
+	cluster := gocql.NewCluster(a.urls[0])
+	cluster.ProtoVersion = 3
+	cluster.Authenticator = gocql.PasswordAuthenticator{
+		Username: a.Username,
+		Password: a.Password,
+	}
+	session, err := cluster.CreateSession()
+	if err != nil {
+		log.Fatalf("Cassandra conn error: %s", err.Error())
+	}
+	qe := gocassa.GoCQLSessionToQueryExecutor(session)
+	a.Session = gocassa.NewConnection(qe).KeySpace("events")
 }
 
 func (a *Adaptor) AddEvent(eventMap map[string]interface{}) error {
@@ -43,27 +74,27 @@ func (a *Adaptor) AddEvent(eventMap map[string]interface{}) error {
 	return a.Save(e)
 }
 
-func (a *Adaptor) DeleteEvent(eventID string) error {
-	e := Event{SGEventID: eventID}
-	saveErr := a.Delete(e)
-
-	return saveErr
-}
-
 func (a *Adaptor) Save(e Event) error {
 	for _, indexField := range IndexFields {
 		table := a.GetEventMultimapTable(indexField)
 
 		if err := table.Set(e).Run(); err != nil {
-			a.ReestablishConnection()
+			log.Println(err.Error())
 
 			return fmt.Errorf("Save error: %s", err.Error())
 		}
 	}
 
-	table := a.GetTimeSeriesEventTable()
+	table := a.GetEventMapTable()
 	if err := table.Set(e).Run(); err != nil {
-		a.ReestablishConnection()
+		log.Println(err.Error())
+
+		return fmt.Errorf("Save error: %s", err.Error())
+	}
+
+	timeSeriesTable := a.GetTimeSeriesEventTable()
+	if err := timeSeriesTable.Set(e).Run(); err != nil {
+		log.Println(err.Error())
 
 		return fmt.Errorf("Save error: %s", err.Error())
 	}
@@ -71,22 +102,38 @@ func (a *Adaptor) Save(e Event) error {
 	return nil
 }
 
-func (a *Adaptor) Delete(e Event) error {
+func (a *Adaptor) DeleteEvent(SGEventID string) error {
+	table := a.GetEventMapTable()
+	var e Event
+
+	err := table.Read(SGEventID, &e).Run()
+	if err != nil {
+		a.ReestablishConnection()
+
+		return fmt.Errorf("Delete error, event not found: %s", err.Error())
+	}
+
+	if err := table.Delete(e.SGEventID).Run(); err != nil {
+		a.ReestablishConnection()
+
+		log.Printf("Delete error: %s, couldn't delete event from map table\n", err.Error())
+	}
+
 	for _, indexField := range IndexFields {
 		table := a.GetEventMultimapTable(indexField)
 
-		if err := table.Delete(e, e.SGEventID).Run(); err != nil {
+		if err := table.Delete(e.SGEventID, e.SGEventID).Run(); err != nil {
 			a.ReestablishConnection()
 
-			return fmt.Errorf("Delete error: %s", err.Error())
+			log.Printf("Delete error: %s, couldn't delete event with index %s \n", err.Error(), indexField)
 		}
 	}
 
-	table := a.GetTimeSeriesEventTable()
-	if err := table.Delete(e.Timestamp, e.SGEventID).Run(); err != nil {
+	timeSeriesTable := a.GetTimeSeriesEventTable()
+	if err := timeSeriesTable.Delete(e.Timestamp, e.SGEventID).Run(); err != nil {
 		a.ReestablishConnection()
 
-		return fmt.Errorf("Delete error: %s", err.Error())
+		log.Printf("Delete error: %s, couldn't delete time series event\n", err.Error())
 	}
 
 	return nil
@@ -150,7 +197,7 @@ func (a *Adaptor) GetEvents(field string, fieldValue interface{}, limit int, off
 func (a *Adaptor) GetEvent(SGEventID string) (Event, error) {
 	var event Event
 
-	mapTable := a.Session.MapTable("events", "sg_event_id", &Event{})
+	mapTable := a.GetEventMapTable()
 
 	list := mapTable.Read(SGEventID, &event)
 

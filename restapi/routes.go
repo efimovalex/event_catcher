@@ -27,12 +27,12 @@ func Routes(deps dependencies) *echo.Echo {
 	eventsEndpoints := &EventsEndpoints{DBAdaptor: deps.DBAdaptor, CacheAdaptor: deps.CacheAdaptor}
 	eventEndpoints := &EventEndpoints{DBAdaptor: deps.DBAdaptor, CacheAdaptor: deps.CacheAdaptor}
 
-	resource = Resources["eventsEndpoint"]
-	deps.Router.Get(resource, dispatch(resource, eventsEndpoints.Get))
-
 	resource = Resources["eventEndpoint"]
 	deps.Router.Delete(resource, dispatch(resource, eventEndpoints.Delete))
 	deps.Router.Get(resource, dispatch(resource, eventEndpoints.Get))
+
+	resource = Resources["eventsEndpoint"]
+	deps.Router.Get(resource, dispatch(resource, eventsEndpoints.Get))
 
 	return deps.Router
 }

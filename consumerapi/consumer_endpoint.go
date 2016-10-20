@@ -33,7 +33,6 @@ func (s *Service) eventConsumerHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Go through each payload and queue items individually to be posted to Cassandra
 	for _, job := range content {
-
 		// let's create a job with the payload
 		work := Job{Payload: job}
 		// Push the work onto the queue.
