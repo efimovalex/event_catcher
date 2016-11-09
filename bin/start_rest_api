@@ -35,6 +35,6 @@ go build -v \
   -o $BIN_EVENT_KIT \
   .
 
- source example.env
+source example.env
 
 $BIN_EVENT_KIT restapi

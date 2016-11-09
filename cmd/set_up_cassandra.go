@@ -7,6 +7,7 @@ import (
 
 	"github.com/efimovalex/EventKitAPI/adaptors/database"
 	"github.com/efimovalex/EventKitAPI/consumerapi"
+	"github.com/gocql/gocql"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/spf13/cobra"
 )
@@ -27,6 +28,21 @@ func setUp(cmd *cobra.Command, args []string) {
 
 	if err := envconfig.Process("CONSUMER", &config); err != nil {
 		log.Fatal("Error occurred during startup:", err.Error())
+	}
+
+	cluster := gocql.NewCluster(strings.Split(config.CassandraInterfaces, ",")...)
+	cluster.ProtoVersion = 3
+
+	session, err := cluster.CreateSession()
+	if err != nil {
+		log.Print(err.Error())
+
+		return
+	}
+
+	q := session.Query("CREATE KEYSPACE IF NOT EXISTS events WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};", "")
+	if err := q.Exec(); err != nil {
+		log.Print(err.Error())
 	}
 
 	DBAdaptor := database.NewAdaptor(strings.Split(config.CassandraInterfaces, ","), config.CassandraUser, config.CassandraPassword)

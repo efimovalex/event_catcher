@@ -29,11 +29,11 @@ func NewAdaptor(urls []string, username, password string) *Adaptor {
 	cluster.Keyspace = "events"
 	cluster.ProtoVersion = 3
 
-	cluster.Authenticator = gocql.PasswordAuthenticator{
-		Username: username,
-		Password: password,
-	}
-	cluster.Keyspace = "events"
+	// cluster.Authenticator = gocql.PasswordAuthenticator{
+	// 	Username: username,
+	// 	Password: password,
+	// }
+
 	session, err := cluster.CreateSession()
 	if err != nil {
 		log.Fatalf("Cassandra conn error: %s", err.Error())

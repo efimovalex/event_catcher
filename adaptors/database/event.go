@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"log"
 	"reflect"
 	"strconv"
 	"time"
