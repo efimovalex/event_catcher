@@ -17,6 +17,7 @@ import (
 type EventsEndpoints struct {
 	DBAdaptor    *database.Adaptor
 	CacheAdaptor *cache.Adaptor
+	Config       *Config
 }
 
 const Timestamp = "day"
@@ -37,11 +38,13 @@ func (ee *EventsEndpoints) Get(c echo.Context) error {
 
 	queryString := []byte(c.Request().URL().QueryString())
 
-	cachedResponse := ee.CacheAdaptor.GetEventRequest(queryString)
-	if cachedResponse != "" {
-		log.Println("returning cached response")
+	if ee.Config.EnableCaching {
+		cachedResponse := ee.CacheAdaptor.GetEventRequest(queryString)
+		if cachedResponse != "" {
+			log.Println("returning cached response")
 
-		return c.JSONBlob(http.StatusOK, []byte(cachedResponse))
+			return c.JSONBlob(http.StatusOK, []byte(cachedResponse))
+		}
 	}
 
 	offsetID := c.QueryParam("offset_id")
@@ -115,7 +118,9 @@ func (ee *EventsEndpoints) Get(c echo.Context) error {
 		}
 	}
 
-	ee.CacheAdaptor.SaveEventRequest(queryString, response)
+	if ee.Config.EnableCaching {
+		ee.CacheAdaptor.SaveEventRequest(queryString, response)
+	}
 
 	return c.JSON(http.StatusOK, response)
 }

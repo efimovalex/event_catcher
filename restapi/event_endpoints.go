@@ -13,6 +13,7 @@ import (
 type EventEndpoints struct {
 	DBAdaptor    *database.Adaptor
 	CacheAdaptor *cache.Adaptor
+	Config       *Config
 }
 
 func (ee *EventEndpoints) Delete(c echo.Context) error {
@@ -31,11 +32,13 @@ func (ee *EventEndpoints) Delete(c echo.Context) error {
 func (ee *EventEndpoints) Get(c echo.Context) error {
 	eventID := c.Param("sg_event_id")
 
-	cachedResponse := ee.CacheAdaptor.GetEvent(eventID)
-	if cachedResponse != "" {
-		log.Println("returning cached response")
+	if ee.Config.EnableCaching {
+		cachedResponse := ee.CacheAdaptor.GetEvent(eventID)
+		if cachedResponse != "" {
+			log.Println("returning cached response")
 
-		return c.JSONBlob(http.StatusOK, []byte(cachedResponse))
+			return c.JSONBlob(http.StatusOK, []byte(cachedResponse))
+		}
 	}
 
 	event, err := ee.DBAdaptor.GetEvent(eventID)

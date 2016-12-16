@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/efimovalex/EventKitAPI/adaptors/database"
 	"github.com/efimovalex/EventKitAPI/consumerapi"
@@ -31,6 +32,7 @@ func setUp(cmd *cobra.Command, args []string) {
 	}
 
 	cluster := gocql.NewCluster(strings.Split(config.CassandraInterfaces, ",")...)
+	cluster.Timeout = 1 * time.Minute
 	cluster.ProtoVersion = 3
 
 	session, err := cluster.CreateSession()
@@ -38,6 +40,11 @@ func setUp(cmd *cobra.Command, args []string) {
 		log.Print(err.Error())
 
 		return
+	}
+
+	qd := session.Query("DROP KEYSPACE IF EXISTS events;", "")
+	if err := qd.Exec(); err != nil {
+		log.Print(err.Error())
 	}
 
 	q := session.Query("CREATE KEYSPACE IF NOT EXISTS events WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};", "")
@@ -50,18 +57,18 @@ func setUp(cmd *cobra.Command, args []string) {
 	for _, indexField := range database.IndexFields {
 		eventsTable := DBAdaptor.GetEventMultimapTable(indexField)
 
-		if err := eventsTable.Create(); err != nil {
+		if err := eventsTable.CreateIfNotExist(); err != nil {
 			log.Print(err.Error())
 		}
 	}
 
 	eventTable := DBAdaptor.GetTimeSeriesEventTable()
-	if err := eventTable.Create(); err != nil {
+	if err := eventTable.CreateIfNotExist(); err != nil {
 		log.Print(err.Error())
 	}
 
 	eventMapTable := DBAdaptor.GetEventMapTable()
-	if err := eventMapTable.Create(); err != nil {
+	if err := eventMapTable.CreateIfNotExist(); err != nil {
 		log.Print(err.Error())
 	}
 }

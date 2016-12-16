@@ -21,7 +21,7 @@ var URL = ""
 
 type Service struct {
 	Logger    *log.Logger
-	config    *Config
+	Config    *Config
 	DBAdaptor *database.Adaptor
 	Router    *echo.Echo
 }
@@ -40,15 +40,18 @@ func NewService(config *Config) Service {
 
 	DBAdaptor := database.NewAdaptor(strings.Split(config.CassandraInterfaces, ","), config.CassandraUser, config.CassandraPassword)
 
-	CacheAdaptor := cache.NewAdaptor(config.CacheURL, config.CacheRedisPassword)
+	var CacheAdaptor *cache.Adaptor
+	if config.EnableCaching == true {
+		CacheAdaptor = cache.NewAdaptor(config.CacheURL, config.CacheRedisPassword)
+	}
 
 	service := Service{
 		Logger: logger,
-		config: config,
+		Config: config,
 		Router: Routes(
 			// add each dependent service as a dependency to the router
 			dependencies{
-				config:       config,
+				Config:       config,
 				DBAdaptor:    DBAdaptor,
 				CacheAdaptor: CacheAdaptor,
 				Router:       echo,
@@ -78,7 +81,7 @@ func (s *Service) Start(config *Config) error {
 
 // StartHTTP listens on the configured ports for the REST application
 func (s *Service) StartHTTP() error {
-	address := fmt.Sprintf("%s:%d", s.config.Interface, s.config.Port)
+	address := fmt.Sprintf("%s:%d", s.Config.Interface, s.Config.Port)
 
 	URL = address
 	// Use middlewares

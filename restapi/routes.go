@@ -13,7 +13,7 @@ var Resources = map[string]string{
 }
 
 type dependencies struct {
-	config       *Config
+	Config       *Config
 	DBAdaptor    *database.Adaptor
 	CacheAdaptor *cache.Adaptor
 	Router       *echo.Echo
@@ -24,8 +24,8 @@ func Routes(deps dependencies) *echo.Echo {
 	var resource string
 
 	// place all routes here to make it easier to find
-	eventsEndpoints := &EventsEndpoints{DBAdaptor: deps.DBAdaptor, CacheAdaptor: deps.CacheAdaptor}
-	eventEndpoints := &EventEndpoints{DBAdaptor: deps.DBAdaptor, CacheAdaptor: deps.CacheAdaptor}
+	eventsEndpoints := &EventsEndpoints{Config: deps.Config, DBAdaptor: deps.DBAdaptor, CacheAdaptor: deps.CacheAdaptor}
+	eventEndpoints := &EventEndpoints{Config: deps.Config, DBAdaptor: deps.DBAdaptor, CacheAdaptor: deps.CacheAdaptor}
 
 	resource = Resources["eventEndpoint"]
 	deps.Router.Delete(resource, dispatch(resource, eventEndpoints.Delete))

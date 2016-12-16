@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+# Get repo root by sub-shelling and getting the parent directory of this script
+DIR=$( cd $(dirname $0)/.. && pwd )
+source $DIR/bin/include
+
+export GO15VENDOREXPERIMENT=1
+
+echo -n "Testing with "
+go version
+
+echo "Running go tests with -tags=consumer_acceptance in $PWD with GOPATH=$GOPATH"
+
+source example.env
+
+./build/event_kit set_up_cassandra
+
+./bin/start_consumer&
+
+# Seeing unexpected errors? did you source your env file?
+go test ./test_consumer -tags=consumer_acceptance -parallel=2 -race
+
+pkill "event_kit consumer"
